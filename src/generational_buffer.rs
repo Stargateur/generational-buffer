@@ -40,7 +40,11 @@ pub struct GenerationalBuffer<T> {
 
 impl<T> GenerationalBuffer<T> {
     /// Creates a new generational buffer with the specified capacity
+    ///
+    /// Minimum capacity is 1.
     pub fn new(max_capacity: usize) -> Self {
+        let max_capacity = max_capacity.max(1);
+
         Self {
             entries: Vec::new(),
             max_capacity,
@@ -191,6 +195,18 @@ impl<O> Copy for Handle<O> {}
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_capacity_limit() {
+      let mut buffer = GenerationalBuffer::new(0);
+
+      let h1 = buffer.push(10);
+      assert_eq!(buffer.get(h1), Some(&10));
+
+      let h2 = buffer.push(20);
+      assert_eq!(buffer.get(h1), None);
+      assert_eq!(buffer.get(h2), Some(&20));
+    }
 
     #[test]
     fn test_basic_operations() {
